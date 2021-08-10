@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { SideBar } from './components/SideBar';
 import { Content } from './components/Content';
@@ -9,6 +9,7 @@ import './styles/global.scss';
 
 import './styles/sidebar.scss';
 import './styles/content.scss';
+import { useMemo } from 'react';
 
 interface GenreResponseProps {
   id: number;
@@ -35,6 +36,7 @@ export function App() {
   const [movies, setMovies] = useState<MovieProps[]>([]);
   const [selectedGenre, setSelectedGenre] = useState<GenreResponseProps>({} as GenreResponseProps);
 
+  /*
   useEffect(() => {
     api.get<GenreResponseProps[]>('genres').then(response => {
       setGenres(response.data);
@@ -50,10 +52,34 @@ export function App() {
       setSelectedGenre(response.data);
     })
   }, [selectedGenreId]);
+  */
 
-  function handleClickButton(id: number) {
+  /*function handleClickButton(id: number) {
     setSelectedGenreId(id);
-  }
+  }*/
+
+  // Se a variavel que esta sendo setada ser usada em algum componente 
+  // pode-se usar o useMemo.
+  useMemo(() => {
+    api.get<GenreResponseProps[]>('genres').then(response => {
+      setGenres(response.data);
+    });
+  }, []);
+
+  useMemo(() => {
+    api.get<MovieProps[]>(`movies/?Genre_id=${selectedGenreId}`).then(response => {
+      setMovies(response.data);
+    });
+
+    api.get<GenreResponseProps>(`genres/${selectedGenreId}`).then(response => {
+      setSelectedGenre(response.data);
+    })
+  }, [selectedGenreId]);
+
+
+  const handleClickButton = useCallback((id: number) => {
+    setSelectedGenreId(id);
+  }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row' }}>
